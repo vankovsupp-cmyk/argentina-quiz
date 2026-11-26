@@ -1,4 +1,4 @@
-const CACHE_NAME = "clasequiz-pwa-v3";
+const CACHE_NAME = "clasequiz-pwa-v4";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -7,10 +7,7 @@ const STATIC_ASSETS = [
   "./app.js",
   "./manifest-player.json",
   "./manifest-host.json",
-  "./icon-player-192.png",
-  "./icon-player-512.png",
-  "./icon-host-192.png",
-  "./icon-host-512.png"
+  "./icon.png"
 ];
 
 self.addEventListener("install", (event) => {
