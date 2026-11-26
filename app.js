@@ -27,7 +27,7 @@ const LETTERS = ["A", "B", "C", "D"];
 const DEFAULT_QUIZ_ID = "argentina-default";
 const DEFAULT_QUIZ = {
   id: DEFAULT_QUIZ_ID,
-  title: "Presentación sobre Argentina",
+  title: "Argentina - Presentación",
   subtitle: "Geografía, historia, cultura y deporte",
   duration: DEFAULT_DURATION,
   questions: [
@@ -330,16 +330,18 @@ function showHostView(name) {
   const inSession = name === "lobby" || name === "question" || name === "leaderboard" || name === "podium";
   const exitBtn = $("btn-host-exit");
   const topMeta = $("host-topbar-meta");
-  const selectActions = $("host-topbar-select-actions");
   const topTitle = $("host-topbar-title");
 
   if (exitBtn) exitBtn.classList.toggle("hidden", !inSession);
   if (topMeta) topMeta.classList.toggle("hidden", !inSession);
-  if (selectActions) selectActions.classList.toggle("hidden", name !== "select");
   if (topTitle) {
-    topTitle.textContent = inSession && hostState.selectedQuiz
-      ? hostState.selectedQuiz.title
-      : "ClaseQuiz Host";
+    if (inSession && hostState.selectedQuiz) {
+      topTitle.textContent = hostState.selectedQuiz.title;
+    } else if (name === "manager") {
+      topTitle.textContent = "Manage Quizzes";
+    } else {
+      topTitle.textContent = "Host Control Panel";
+    }
   }
 }
 
@@ -410,57 +412,55 @@ async function initHostQuizCatalog() {
 }
 
 function renderHostQuizCatalog() {
-  const grid = $("host-quizzes-grid");
-  const loading = $("host-quizzes-loading");
-  if (!grid) return;
-
-  if (loading) loading.classList.add("hidden");
-  grid.innerHTML = "";
+  const selectEl = $("select-host-quiz");
+  const createBtn = $("btn-create-room");
+  if (!selectEl) return;
 
   const quizzes = Object.values(hostState.quizzes);
+  const currentId =
+    (hostState.selectedQuiz && hostState.quizzes[hostState.selectedQuiz.id] && hostState.selectedQuiz.id) ||
+    (quizzes[0] ? quizzes[0].id : "");
+
+  selectEl.innerHTML = "";
   quizzes.forEach((quiz) => {
-    const card = document.createElement("article");
-    card.className = "card quiz-catalog-card";
-
-    const pills = document.createElement("div");
-    pills.className = "quiz-card-pills";
-
-    const qPill = document.createElement("span");
-    qPill.className = "quiz-pill tabular";
-    qPill.textContent = `${quiz.questions.length} preguntas`;
-
-    const tPill = document.createElement("span");
-    tPill.className = "quiz-pill gold tabular";
-    tPill.textContent = `${quiz.duration} s / pregunta`;
-
-    pills.append(qPill, tPill);
-
-    const title = document.createElement("h2");
-    title.className = "quiz-card-title";
-    title.textContent = quiz.title;
-
-    const desc = document.createElement("p");
-    desc.className = "quiz-card-desc";
-    desc.textContent = quiz.subtitle || "Quiz interactivo multijugador";
-
-    const actions = document.createElement("div");
-    actions.className = "quiz-card-actions";
-
-    const startBtn = document.createElement("button");
-    startBtn.type = "button";
-    startBtn.className = "btn-primary btn-block btn-lg";
-    startBtn.textContent = "Iniciar Sala →";
-    startBtn.addEventListener("click", () => {
-      startHostSession(quiz);
-    });
-
-    actions.appendChild(startBtn);
-    card.append(pills, title, desc, actions);
-    grid.appendChild(card);
+    const opt = document.createElement("option");
+    opt.value = quiz.id;
+    opt.textContent = `${quiz.title} (${quiz.questions.length} questions)`;
+    selectEl.appendChild(opt);
   });
+
+  if (currentId) {
+    selectEl.value = currentId;
+    hostState.selectedQuiz = hostState.quizzes[currentId];
+    if (createBtn) createBtn.disabled = false;
+  } else {
+    if (createBtn) createBtn.disabled = true;
+  }
+
+  updateSelectedQuizPreview();
 }
 
-/* ---------- Admin Code Modal & Quiz Manager (/quizzes) ---------- */
+function updateSelectedQuizPreview() {
+  const quiz = hostState.selectedQuiz;
+  const countEl = $("preview-q-count");
+  const durEl = $("preview-q-duration");
+  const descEl = $("preview-q-desc");
+
+  if (!quiz) {
+    if (countEl) countEl.textContent = "0 questions";
+    if (durEl) durEl.textContent = `${DEFAULT_DURATION} s / question`;
+    if (descEl) descEl.textContent = "";
+    return;
+  }
+
+  if (countEl) countEl.textContent = `${quiz.questions.length} questions`;
+  if (durEl) durEl.textContent = `${quiz.duration} s / question`;
+  if (descEl) {
+    descEl.textContent = quiz.subtitle || "Ready to launch on the classroom interactive board.";
+  }
+}
+
+/* ---------- Admin PIN Modal & Manage Quizzes (100% ENGLISH · /quizzes) ---------- */
 function openAdminModal() {
   if (hostState.adminUnlocked) {
     openQuizManager();
@@ -497,7 +497,7 @@ function handleAdminCodeSubmit(e) {
     openQuizManager();
   } else {
     if (errEl) {
-      errEl.textContent = "Código incorrecto. Inténtalo de nuevo.";
+      errEl.textContent = "Incorrect PIN. Please try again.";
       errEl.classList.remove("hidden");
     }
     if (input) {
@@ -523,7 +523,7 @@ function renderManagerQuizzesList() {
   if (quizzes.length === 0) {
     const empty = document.createElement("p");
     empty.className = "players-empty";
-    empty.textContent = "No hay quizzes todavía. Crea uno nuevo.";
+    empty.textContent = "No quizzes yet. Click '+ New Quiz' to create one.";
     container.appendChild(empty);
     return;
   }
@@ -541,32 +541,26 @@ function renderManagerQuizzesList() {
 
     const meta = document.createElement("p");
     meta.className = "manager-item-meta";
-    meta.textContent = `${quiz.questions.length} preguntas · ${quiz.duration} s${quiz.subtitle ? " · " + quiz.subtitle : ""}`;
+    meta.textContent = `${quiz.questions.length} questions · ${quiz.duration}s${quiz.subtitle ? " · " + quiz.subtitle : ""}`;
 
     info.append(title, meta);
 
     const actions = document.createElement("div");
     actions.className = "action-group";
 
-    const playBtn = document.createElement("button");
-    playBtn.type = "button";
-    playBtn.className = "btn-gold btn-sm";
-    playBtn.textContent = "Jugar";
-    playBtn.addEventListener("click", () => startHostSession(quiz));
-
     const editBtn = document.createElement("button");
     editBtn.type = "button";
     editBtn.className = "btn-primary btn-sm";
-    editBtn.textContent = "Editar";
+    editBtn.textContent = "Edit";
     editBtn.addEventListener("click", () => openQuizEditor(quiz));
 
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.className = "btn-danger btn-sm";
-    delBtn.textContent = "Eliminar";
+    delBtn.textContent = "Delete Quiz";
     delBtn.addEventListener("click", () => deleteQuizFromFirebase(quiz));
 
-    actions.append(playBtn, editBtn, delBtn);
+    actions.append(editBtn, delBtn);
     card.append(info, actions);
     container.appendChild(card);
   });
@@ -575,19 +569,18 @@ function renderManagerQuizzesList() {
 function createEditorQuestionCard(qData = null, idx = 0) {
   const card = document.createElement("div");
   card.className = "editor-q-card";
-  const radioName = "correct_q_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 6);
 
   const top = document.createElement("div");
   top.className = "editor-q-top";
 
   const badge = document.createElement("span");
   badge.className = "editor-q-badge";
-  badge.textContent = `Pregunta ${idx + 1}`;
+  badge.textContent = `Question ${idx + 1}`;
 
   const removeBtn = document.createElement("button");
   removeBtn.type = "button";
   removeBtn.className = "btn-danger btn-sm";
-  removeBtn.textContent = "Quitar";
+  removeBtn.textContent = "Delete Question";
   removeBtn.addEventListener("click", () => {
     card.remove();
     renumberEditorQuestions();
@@ -598,46 +591,48 @@ function createEditorQuestionCard(qData = null, idx = 0) {
   const qInput = document.createElement("input");
   qInput.type = "text";
   qInput.className = "input-field editor-q-input";
-  qInput.placeholder = "Escribe el enunciado de la pregunta...";
+  qInput.placeholder = "Question Text";
   qInput.value = qData ? qData.q : "";
   qInput.required = true;
 
   const optsGrid = document.createElement("div");
   optsGrid.className = "editor-options-grid";
 
-  const selectedCorrect = qData && typeof qData.correct === "number" ? qData.correct : 0;
-
   for (let i = 0; i < 4; i++) {
     const row = document.createElement("div");
     row.className = "editor-opt-row";
 
-    const label = document.createElement("label");
-    label.className = "editor-opt-radio";
-    label.title = `Marcar ${LETTERS[i]} como correcta`;
-
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.name = radioName;
-    radio.value = String(i);
-    radio.checked = i === selectedCorrect;
-
-    const letterSpan = document.createElement("span");
-    letterSpan.textContent = LETTERS[i];
-
-    label.append(radio, letterSpan);
-
     const optInput = document.createElement("input");
     optInput.type = "text";
     optInput.className = "input-field editor-opt-input";
-    optInput.placeholder = `Opción ${LETTERS[i]}`;
+    optInput.placeholder = `Option ${LETTERS[i]}`;
     optInput.value = qData && qData.options && qData.options[i] ? qData.options[i] : "";
     optInput.required = true;
 
-    row.append(label, optInput);
+    row.appendChild(optInput);
     optsGrid.appendChild(row);
   }
 
-  card.append(top, qInput, optsGrid);
+  const correctRow = document.createElement("div");
+  correctRow.className = "editor-correct-row";
+
+  const correctLabel = document.createElement("label");
+  correctLabel.textContent = "Correct Answer:";
+
+  const correctSelect = document.createElement("select");
+  correctSelect.className = "input-field editor-correct-select";
+  const selectedCorrect = qData && typeof qData.correct === "number" ? qData.correct : 0;
+
+  for (let i = 0; i < 4; i++) {
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = `Option ${LETTERS[i]}`;
+    if (i === selectedCorrect) opt.selected = true;
+    correctSelect.appendChild(opt);
+  }
+
+  correctRow.append(correctLabel, correctSelect);
+  card.append(top, qInput, optsGrid, correctRow);
   return card;
 }
 
@@ -647,7 +642,7 @@ function renumberEditorQuestions() {
   const cards = Array.from(list.children);
   cards.forEach((card, i) => {
     const badge = card.querySelector(".editor-q-badge");
-    if (badge) badge.textContent = `Pregunta ${i + 1}`;
+    if (badge) badge.textContent = `Question ${i + 1}`;
   });
   const countEl = $("editor-q-count");
   if (countEl) countEl.textContent = String(cards.length);
@@ -655,7 +650,7 @@ function renumberEditorQuestions() {
 
 function openQuizEditor(quiz = null) {
   hostState.editingQuizId = quiz ? quiz.id : null;
-  $("editor-heading").textContent = quiz ? "Editar Quiz" : "Crear Nuevo Quiz";
+  $("editor-heading").textContent = quiz ? "Edit Quiz" : "New Quiz";
   $("editor-title").value = quiz ? quiz.title : "";
   $("editor-subtitle").value = quiz ? quiz.subtitle : "";
   $("editor-duration").value = String(quiz ? quiz.duration : DEFAULT_DURATION);
@@ -698,7 +693,7 @@ async function handleQuizEditorSave(e) {
   showEditorError("");
 
   if (!db) {
-    showEditorError("No hay conexión con Firebase.");
+    showEditorError("No connection to Firebase.");
     return;
   }
 
@@ -707,14 +702,14 @@ async function handleQuizEditorSave(e) {
   const duration = Math.max(10, Math.min(120, Number($("editor-duration").value) || DEFAULT_DURATION));
 
   if (!title) {
-    showEditorError("Introduce un título para el quiz.");
+    showEditorError("Please enter a Quiz Title.");
     $("editor-title").focus();
     return;
   }
 
   const cards = Array.from($("editor-questions-list").children);
   if (cards.length === 0) {
-    showEditorError("Añade al menos una pregunta.");
+    showEditorError("Please add at least one question.");
     return;
   }
 
@@ -724,16 +719,16 @@ async function handleQuizEditorSave(e) {
     const qText = card.querySelector(".editor-q-input").value.trim();
     const optInputs = Array.from(card.querySelectorAll(".editor-opt-input"));
     const options = optInputs.map((inp) => inp.value.trim());
-    const checkedRadio = card.querySelector('input[type="radio"]:checked');
-    const correct = checkedRadio ? Number(checkedRadio.value) : 0;
+    const correctSel = card.querySelector(".editor-correct-select");
+    const correct = correctSel ? Number(correctSel.value) : 0;
 
     if (!qText) {
-      showEditorError(`La pregunta ${i + 1} no tiene enunciado.`);
+      showEditorError(`Question ${i + 1} is missing Question Text.`);
       card.querySelector(".editor-q-input").focus();
       return;
     }
     if (options.some((opt) => !opt)) {
-      showEditorError(`Completa las 4 opciones (A, B, C, D) en la pregunta ${i + 1}.`);
+      showEditorError(`Please complete Option A, B, C, and D for Question ${i + 1}.`);
       return;
     }
 
@@ -752,10 +747,10 @@ async function handleQuizEditorSave(e) {
       questions,
       updatedAt: firebase.database.ServerValue.TIMESTAMP
     });
-    showToast("Quiz guardado en Firebase ✓");
+    showToast("Quiz saved to Firebase ✓");
     openQuizManager();
   } catch (err) {
-    showEditorError("Error al guardar en Firebase. Revisa tu conexión.");
+    showEditorError("Failed to save quiz to Firebase. Check your connection.");
   } finally {
     saveBtns.forEach((b) => { if (b) b.disabled = false; });
   }
@@ -765,17 +760,17 @@ async function deleteQuizFromFirebase(quiz) {
   if (!db) return;
   const total = Object.keys(hostState.quizzes).length;
   if (total <= 1) {
-    showToast("Debe haber al menos un quiz disponible.");
+    showToast("At least one quiz must remain.");
     return;
   }
-  const confirmed = window.confirm(`¿Eliminar el quiz "${quiz.title}"?`);
+  const confirmed = window.confirm(`Delete quiz "${quiz.title}"?`);
   if (!confirmed) return;
 
   try {
     await db.ref(`quizzes/${quiz.id}`).remove();
-    showToast("Quiz eliminado.");
+    showToast("Quiz deleted.");
   } catch (err) {
-    showToast("No se pudo eliminar el quiz.");
+    showToast("Could not delete quiz.");
   }
 }
 
@@ -1124,7 +1119,7 @@ function renderHostPodium() {
   const sorted = getSortedPlayers(hostState.players);
   const eyebrow = $("podium-quiz-eyebrow");
   if (eyebrow) {
-    eyebrow.textContent = `RESULTADOS FINALES · ${hostState.selectedQuiz.title.toUpperCase()}`;
+    eyebrow.textContent = `Resultados · ${hostState.selectedQuiz.title}`;
   }
 
   for (let pos = 1; pos <= 3; pos++) {
@@ -1229,13 +1224,27 @@ function initHostApp() {
     podium: $("host-view-podium")
   };
 
-  // Topbar & navigation
+  // Topbar & Control Panel navigation
   $("btn-host-exit").addEventListener("click", () => {
     cleanupHostRoomListeners();
     showHostView("select");
   });
 
-  $("btn-open-manager").addEventListener("click", openAdminModal);
+  $("select-host-quiz").addEventListener("change", (e) => {
+    const id = e.target.value;
+    if (id && hostState.quizzes[id]) {
+      hostState.selectedQuiz = hostState.quizzes[id];
+      updateSelectedQuizPreview();
+    }
+  });
+
+  $("btn-create-room").addEventListener("click", () => {
+    const selectedId = $("select-host-quiz").value;
+    const quiz = (selectedId && hostState.quizzes[selectedId]) || hostState.selectedQuiz || DEFAULT_QUIZ;
+    startHostSession(quiz);
+  });
+
+  $("btn-manage-quizzes").addEventListener("click", openAdminModal);
   $("btn-admin-cancel").addEventListener("click", closeAdminModal);
   $("admin-code-form").addEventListener("submit", handleAdminCodeSubmit);
   $("modal-admin-code").addEventListener("click", (e) => {

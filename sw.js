@@ -1,4 +1,4 @@
-const CACHE_NAME = "clasequiz-pwa-v1";
+const CACHE_NAME = "clasequiz-pwa-v2";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
