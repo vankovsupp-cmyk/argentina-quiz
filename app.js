@@ -18,7 +18,7 @@ let db = null;
 let firebaseInitError = "";
 
 const DEFAULT_DURATION = 40; // seconds
-const ADMIN_CODE = "2026";
+const ADMIN_CODE = "1948";
 const LETTERS = ["A", "B", "C", "D"];
 
 /* ==========================================================================
