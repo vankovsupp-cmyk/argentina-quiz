@@ -1,0 +1,26 @@
+{
+  "name": "ClaseQuiz",
+  "short_name": "ClaseQuiz",
+  "description": "Aplicación interactiva para alumnos · Quiz multijugador en tiempo real",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#162235",
+  "theme_color": "#162235",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "./icon-player-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-player-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
