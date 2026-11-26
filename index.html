@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Presentación sobre Argentina · Quiz Interactivo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Subtle Argentine Albiceleste top ribbon -->
+  <div class="flag-ribbon" aria-hidden="true">
+    <span class="flag-stripe sky"></span>
+    <span class="flag-stripe white"></span>
+    <span class="flag-stripe sky"></span>
+  </div>
+
+  <div class="app-shell">
+    <!-- ==================== 1. HOME SCREEN ==================== -->
+    <main id="screen-home" class="screen active" aria-label="Pantalla de inicio">
+      <header class="home-header">
+        <div class="sun-badge" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="44" height="44" fill="none">
+            <circle cx="32" cy="32" r="13" fill="#E5A93C"/>
+            <g stroke="#E5A93C" stroke-width="3" stroke-linecap="round">
+              <line x1="32" y1="6" x2="32" y2="14"/>
+              <line x1="32" y1="50" x2="32" y2="58"/>
+              <line x1="6" y1="32" x2="14" y2="32"/>
+              <line x1="50" y1="32" x2="58" y2="32"/>
+              <line x1="13.6" y1="13.6" x2="19.3" y2="19.3"/>
+              <line x1="44.7" y1="44.7" x2="50.4" y2="50.4"/>
+              <line x1="50.4" y1="13.6" x2="44.7" y2="19.3"/>
+              <line x1="19.3" y1="44.7" x2="13.6" y2="50.4"/>
+            </g>
+          </svg>
+        </div>
+        <p class="eyebrow">QUIZ MULTIJUGADOR EN TIEMPO REAL</p>
+        <h1 class="home-title">Presentación sobre Argentina</h1>
+        <p class="home-subtitle">15 preguntas · Geografía, historia, cultura y deporte</p>
+      </header>
+
+      <section class="role-grid" aria-label="Seleccionar modo">
+        <button id="btn-choose-host" class="role-card role-host" type="button">
+          <span class="role-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+              <rect x="4" y="8" width="40" height="26" rx="4" stroke="currentColor" stroke-width="3"/>
+              <line x1="16" y1="40" x2="32" y2="40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <line x1="24" y1="34" x2="24" y2="40" stroke="currentColor" stroke-width="3"/>
+              <circle cx="16" cy="21" r="3" fill="#E5A93C"/>
+              <line x1="23" y1="18" x2="36" y2="18" stroke="#5B9BD5" stroke-width="3" stroke-linecap="round"/>
+              <line x1="23" y1="24" x2="32" y2="24" stroke="#5B9BD5" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="role-tag">PARA LA CLASE</span>
+          <span class="role-title">PIZARRA INTERACTIVA (HOST)</span>
+          <span class="role-desc">Crea una sala, proyecta el código QR y dirige el concurso desde la pizarra.</span>
+        </button>
+
+        <button id="btn-choose-player" class="role-card role-player" type="button">
+          <span class="role-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+              <rect x="13" y="5" width="22" height="38" rx="4" stroke="currentColor" stroke-width="3"/>
+              <line x1="20" y1="37" x2="28" y2="37" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <rect x="18" y="13" width="12" height="7" rx="2" fill="#5B9BD5"/>
+              <rect x="18" y="23" width="12" height="7" rx="2" fill="#E5A93C"/>
+            </svg>
+          </span>
+          <span class="role-tag">PARA ALUMNOS</span>
+          <span class="role-title">JUGADOR (MÓVIL)</span>
+          <span class="role-desc">Introduce el PIN de la pizarra, escribe tu nombre y responde desde tu teléfono.</span>
+        </button>
+      </section>
+    </main>
+
+    <!-- ==================== 2. HOST SCREEN ==================== -->
+    <section id="screen-host" class="screen" aria-label="Modo pizarra interactiva">
+      <!-- Persistent Host Top Bar -->
+      <header class="host-topbar">
+        <div class="host-brand">
+          <button id="btn-host-exit" class="btn-ghost btn-sm" type="button" title="Volver al inicio">← Inicio</button>
+          <span class="host-title-pill">Presentación sobre Argentina</span>
+        </div>
+        <div class="host-meta">
+          <span class="meta-chip">PIN: <strong id="host-topbar-pin" class="tabular">----</strong></span>
+          <span class="meta-chip">Jugadores: <strong id="host-topbar-players" class="tabular">0</strong></span>
+        </div>
+      </header>
+
+      <!-- HOST VIEW A: LOBBY -->
+      <div id="host-view-lobby" class="host-view active">
+        <div class="lobby-layout">
+          <div class="card lobby-join-card">
+            <p class="section-label">ESCANEA EL CÓDIGO QR O ENTRA CON EL PIN</p>
+            <div class="pin-display" id="host-lobby-pin">----</div>
+            <div class="qr-frame">
+              <img id="host-qr-img" src="" alt="Código QR para unirse al quiz" width="280" height="280">
+            </div>
+            <p class="join-url-text" id="host-join-url"></p>
+          </div>
+
+          <div class="card lobby-players-card">
+            <div class="lobby-players-head">
+              <div>
+                <p class="section-label">SALA DE ESPERA EN VIVO</p>
+                <h2 class="lobby-count-heading">
+                  Jugadores conectados: <span id="host-lobby-count" class="tabular accent-sky">0</span>
+                </h2>
+              </div>
+              <button id="btn-host-start" class="btn-primary btn-xl" type="button">EMPEZAR QUIZ</button>
+            </div>
+            <div id="host-players-empty" class="players-empty">
+              Esperando a que los alumnos se conecten con sus teléfonos...
+            </div>
+            <ul id="host-players-list" class="players-grid" aria-live="polite"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOST VIEW B: QUESTION & REVEAL (Unified persistent DOM - zero layout shift) -->
+      <div id="host-view-question" class="host-view">
+        <div class="question-hud">
+          <div class="hud-left">
+            <span class="hud-badge">Pregunta <strong id="host-q-num" class="tabular">1</strong> / <strong id="host-q-total" class="tabular">15</strong></span>
+          </div>
+
+          <div class="hud-center">
+            <div class="timer-pill" id="host-timer-pill">
+              <span class="timer-label">Tiempo</span>
+              <span id="host-timer-sec" class="timer-value tabular">40</span>
+              <span class="timer-unit">s</span>
+            </div>
+          </div>
+
+          <div class="hud-right">
+            <div class="responses-pill">
+              Respuestas: <strong id="host-resp-answered" class="tabular">0</strong> / <strong id="host-resp-total" class="tabular">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Smooth timer progress bar -->
+        <div class="timer-track" aria-hidden="true">
+          <div id="host-timer-bar" class="timer-fill"></div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="card host-question-card">
+          <h2 id="host-question-text" class="host-question-text"></h2>
+        </div>
+
+        <!-- 4 Persistent Options Grid (A/B/C/D) -->
+        <div class="host-options-grid" id="host-options-grid">
+          <div class="option-card" id="host-opt-0" data-opt="0">
+            <div class="option-bar-bg"><div class="option-bar-fill" id="host-opt-bar-0"></div></div>
+            <div class="option-content">
+              <span class="option-letter">A</span>
+              <span class="option-text" id="host-opt-text-0"></span>
+              <span class="option-stat tabular" id="host-opt-pct-0">0%</span>
+            </div>
+          </div>
+          <div class="option-card" id="host-opt-1" data-opt="1">
+            <div class="option-bar-bg"><div class="option-bar-fill" id="host-opt-bar-1"></div></div>
+            <div class="option-content">
+              <span class="option-letter">B</span>
+              <span class="option-text" id="host-opt-text-1"></span>
+              <span class="option-stat tabular" id="host-opt-pct-1">0%</span>
+            </div>
+          </div>
+          <div class="option-card" id="host-opt-2" data-opt="2">
+            <div class="option-bar-bg"><div class="option-bar-fill" id="host-opt-bar-2"></div></div>
+            <div class="option-content">
+              <span class="option-letter">C</span>
+              <span class="option-text" id="host-opt-text-2"></span>
+              <span class="option-stat tabular" id="host-opt-pct-2">0%</span>
+            </div>
+          </div>
+          <div class="option-card" id="host-opt-3" data-opt="3">
+            <div class="option-bar-bg"><div class="option-bar-fill" id="host-opt-bar-3"></div></div>
+            <div class="option-content">
+              <span class="option-letter">D</span>
+              <span class="option-text" id="host-opt-text-3"></span>
+              <span class="option-stat tabular" id="host-opt-pct-3">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Persistent Action Footer (fixed height, toggles controls cleanly) -->
+        <div class="host-action-bar">
+          <button id="btn-host-reveal" class="btn-gold btn-lg" type="button">Mostrar Respuesta</button>
+          <div id="host-post-reveal-actions" class="action-group hidden">
+            <button id="btn-host-leaderboard" class="btn-secondary btn-lg" type="button">Clasificación (Top 5)</button>
+            <button id="btn-host-next" class="btn-primary btn-lg" type="button">Siguiente Pregunta →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOST VIEW C: LEADERBOARD (TOP 5) -->
+      <div id="host-view-leaderboard" class="host-view">
+        <div class="card leaderboard-card">
+          <div class="leaderboard-head">
+            <div>
+              <p class="section-label">PUNTUACIÓN ACTUAL</p>
+              <h2 class="leaderboard-title">Clasificación (Top 5)</h2>
+            </div>
+            <span class="hud-badge">Tras pregunta <strong id="host-lb-q-num" class="tabular">1</strong> / 15</span>
+          </div>
+
+          <ol id="host-leaderboard-list" class="leaderboard-list"></ol>
+          <p id="host-leaderboard-empty" class="players-empty hidden">Todavía no hay jugadores registrados.</p>
+
+          <div class="leaderboard-footer">
+            <button id="btn-lb-next" class="btn-primary btn-xl" type="button">Siguiente Pregunta →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOST VIEW D: FINAL PODIUM -->
+      <div id="host-view-podium" class="host-view">
+        <div class="podium-wrapper">
+          <div class="podium-header">
+            <p class="eyebrow">RESULTADOS FINALES · PRESENTACIÓN SOBRE ARGENTINA</p>
+            <h2 class="podium-heading">¡Podio Final!</h2>
+          </div>
+
+          <div class="podium-stage" aria-label="Podio de ganadores">
+            <!-- 2nd Place -->
+            <div class="podium-col place-2" id="podium-col-2">
+              <div class="podium-medal silver">2.º</div>
+              <div class="podium-name" id="podium-name-2">—</div>
+              <div class="podium-score tabular" id="podium-score-2">0 pts</div>
+              <div class="podium-block block-2">2</div>
+            </div>
+
+            <!-- 1st Place -->
+            <div class="podium-col place-1" id="podium-col-1">
+              <div class="podium-crown" aria-hidden="true">👑</div>
+              <div class="podium-medal gold">1.º</div>
+              <div class="podium-name" id="podium-name-1">—</div>
+              <div class="podium-score tabular" id="podium-score-1">0 pts</div>
+              <div class="podium-block block-1">1</div>
+            </div>
+
+            <!-- 3rd Place -->
+            <div class="podium-col place-3" id="podium-col-3">
+              <div class="podium-medal bronze">3.º</div>
+              <div class="podium-name" id="podium-name-3">—</div>
+              <div class="podium-score tabular" id="podium-score-3">0 pts</div>
+              <div class="podium-block block-3">3</div>
+            </div>
+          </div>
+
+          <div id="podium-rest-card" class="card podium-rest-card hidden">
+            <p class="section-label">OTROS FINALISTAS</p>
+            <ol id="podium-rest-list" class="podium-rest-list" start="4"></ol>
+          </div>
+
+          <div class="podium-actions">
+            <button id="btn-host-new-game" class="btn-gold btn-xl" type="button">Crear Nueva Sala</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. PLAYER SCREEN ==================== -->
+    <section id="screen-player" class="screen" aria-label="Modo jugador móvil">
+      <!-- PLAYER VIEW A: JOIN FORM -->
+      <div id="player-view-join" class="player-view active">
+        <div class="player-top-nav">
+          <button id="btn-player-back" class="btn-ghost btn-sm" type="button">← Inicio</button>
+        </div>
+
+        <div class="card player-join-card">
+          <p class="section-label">UNIRSE AL QUIZ</p>
+          <h2 class="player-join-title">Presentación sobre Argentina</h2>
+
+          <form id="player-join-form" class="join-form" novalidate>
+            <div class="form-group">
+              <label for="input-pin">PIN de la sala (4 dígitos)</label>
+              <input
+                id="input-pin"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="4"
+                placeholder="Ej. 4821"
+                autocomplete="off"
+                class="input-field input-pin tabular"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="input-name">Tu nombre</label>
+              <input
+                id="input-name"
+                type="text"
+                maxlength="24"
+                placeholder="Escribe tu nombre"
+                autocomplete="given-name"
+                class="input-field"
+                required
+              >
+            </div>
+
+            <p id="player-join-error" class="form-error hidden" role="alert"></p>
+
+            <button id="btn-player-join" class="btn-primary btn-block btn-lg" type="submit">UNIRSE</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- PLAYER VIEW B: CONNECTED WRAPPER -->
+      <div id="player-view-game" class="player-view">
+        <header class="player-hud">
+          <div class="player-identity">
+            <span id="player-hud-name" class="player-name-badge">Alumno</span>
+            <span class="player-pin-tag">PIN <strong id="player-hud-pin" class="tabular">----</strong></span>
+          </div>
+          <div class="player-score-pill">
+            <span id="player-hud-score" class="tabular">0</span> pts
+          </div>
+        </header>
+
+        <!-- Sub-state 1: Waiting in Lobby -->
+        <div id="player-state-lobby" class="player-substate active">
+          <div class="card player-status-card">
+            <div class="pulse-dot" aria-hidden="true"></div>
+            <h2>¡Estás dentro!</h2>
+            <p class="status-sub">Mira la pizarra interactiva. El quiz comenzará en unos instantes.</p>
+          </div>
+        </div>
+
+        <!-- Sub-state 2: Active Question -->
+        <div id="player-state-question" class="player-substate">
+          <div class="player-q-meta">
+            <span>Pregunta <strong id="player-q-num" class="tabular">1</strong> / 15</span>
+            <span class="player-timer-chip"><strong id="player-timer-sec" class="tabular">40</strong> s</span>
+          </div>
+
+          <div class="card player-question-card">
+            <p id="player-question-text" class="player-question-text"></p>
+          </div>
+
+          <div class="player-options-grid" id="player-options-grid">
+            <button type="button" class="player-opt-btn" id="player-opt-0" data-opt="0">
+              <span class="player-opt-letter">A</span>
+              <span class="player-opt-text" id="player-opt-text-0"></span>
+            </button>
+            <button type="button" class="player-opt-btn" id="player-opt-1" data-opt="1">
+              <span class="player-opt-letter">B</span>
+              <span class="player-opt-text" id="player-opt-text-1"></span>
+            </button>
+            <button type="button" class="player-opt-btn" id="player-opt-2" data-opt="2">
+              <span class="player-opt-letter">C</span>
+              <span class="player-opt-text" id="player-opt-text-2"></span>
+            </button>
+            <button type="button" class="player-opt-btn" id="player-opt-3" data-opt="3">
+              <span class="player-opt-letter">D</span>
+              <span class="player-opt-text" id="player-opt-text-3"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sub-state 2b: Calm Waiting Screen after sending answer -->
+        <div id="player-state-waiting" class="player-substate">
+          <div class="player-q-meta">
+            <span>Pregunta <strong id="player-wait-q-num" class="tabular">1</strong> / 15</span>
+            <span class="player-timer-chip"><strong id="player-wait-timer-sec" class="tabular">40</strong> s</span>
+          </div>
+
+          <div class="card player-waiting-card">
+            <div class="waiting-spinner" aria-hidden="true"></div>
+            <span id="player-wait-choice" class="waiting-choice-pill">Tu opción: A</span>
+            <h2 class="waiting-heading">Respuesta enviada. Esperando a los demás...</h2>
+            <p class="status-sub">El resultado aparecerá automáticamente cuando termine la pregunta.</p>
+          </div>
+        </div>
+
+        <!-- Sub-state 3: Reveal / Leaderboard Clear Result Card -->
+        <div id="player-state-feedback" class="player-substate">
+          <div class="card player-feedback-card" id="player-feedback-card">
+            <div class="feedback-icon" id="player-feedback-icon" aria-hidden="true">✅</div>
+            <h2 id="player-feedback-title" class="feedback-title">¡CORRECTO!</h2>
+            <p id="player-feedback-points" class="feedback-points tabular">+0 puntos</p>
+
+            <div id="player-feedback-correct-box" class="feedback-correct-box hidden">
+              <span class="feedback-correct-label">Respuesta correcta</span>
+              <p id="player-feedback-correct-answer" class="feedback-correct-note"></p>
+            </div>
+
+            <div class="feedback-stats-box">
+              <div class="feedback-rank-line tabular" id="player-feedback-rank">Puesto actual: #1 de 1</div>
+              <div class="feedback-total-line">
+                Puntos totales: <strong id="player-feedback-total" class="tabular">0 puntos</strong>
+              </div>
+            </div>
+
+            <p class="feedback-next-hint">Mira la pizarra para la siguiente pregunta...</p>
+          </div>
+        </div>
+
+        <!-- Sub-state 4: Final Podium -->
+        <div id="player-state-podium" class="player-substate">
+          <div class="card player-podium-card">
+            <p class="section-label">FIN DEL QUIZ</p>
+            <div class="final-rank-badge tabular" id="player-final-rank">1.º</div>
+            <h2 id="player-final-headline">¡Excelente trabajo!</h2>
+            <p class="final-score-big tabular" id="player-final-score">0 pts</p>
+            <p class="status-sub" id="player-final-summary">Respuestas correctas: 0 / 15</p>
+            <button id="btn-player-leave" class="btn-secondary btn-block btn-lg" type="button">Salir de la sala</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast notification for connection / room alerts -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- Firebase Compat SDK v10 (CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
