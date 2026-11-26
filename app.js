@@ -13,8 +13,8 @@ const firebaseConfig = {
   appId: "1:94118854334:web:a26b784afb6b9b1cb668ef"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+let db = null;
+let firebaseInitError = "";
 
 const QUESTION_DURATION = 40; // seconds
 const LETTERS = ["A", "B", "C", "D"];
@@ -24,167 +24,195 @@ const LETTERS = ["A", "B", "C", "D"];
    ========================================================================== */
 const QUESTIONS = [
   {
-    q: "¿De qué palabra latina viene el nombre «Argentina» y qué significa?",
+    q: "¿Qué significa la palabra latina «argentum»?",
     options: [
-      "De «argentum», que significa plata",
-      "De «aurum», que significa oro",
-      "De «agua», por el río de la Plata",
-      "De «australis», que significa sur"
+      "Oro",
+      "Agua",
+      "Plata",
+      "Sol"
+    ],
+    correct: 2
+  },
+  {
+    q: "¿Qué lugar ocupa Argentina entre los países más grandes del mundo?",
+    options: [
+      "El segundo lugar",
+      "El octavo lugar",
+      "El quinto lugar",
+      "El décimo lugar"
+    ],
+    correct: 1
+  },
+  {
+    q: "¿Cómo se llama el barrio de Buenos Aires con casas de colores?",
+    options: [
+      "Teatro Colón",
+      "Palermo",
+      "Tucumán",
+      "La Boca"
+    ],
+    correct: 3
+  },
+  {
+    q: "¿Con cuántos países tiene frontera Argentina?",
+    options: [
+      "Con cinco países",
+      "Con tres países",
+      "Con dos países",
+      "Con siete países"
     ],
     correct: 0
   },
   {
-    q: "¿Qué lugar es Argentina por su tamaño en el mundo y en Sudamérica?",
+    q: "¿Cuál es la montaña más alta de toda América?",
     options: [
-      "El quinto en el mundo y el primero en Sudamérica",
-      "El octavo en el mundo y el segundo en Sudamérica (después de Brasil)",
-      "El décimo en el mundo y el tercero en Sudamérica",
-      "El sexto en el mundo y el segundo en Sudamérica"
-    ],
-    correct: 1
-  },
-  {
-    q: "¿Cómo se llama el barrio famoso de Buenos Aires donde las casas están pintadas de colores muy alegres?",
-    options: [
-      "Palermo",
-      "Recoleta",
-      "La Boca",
-      "San Telmo"
+      "El Perito Moreno",
+      "El monte Everest",
+      "El monte Aconcagua",
+      "El Teide"
     ],
     correct: 2
   },
   {
-    q: "¿Con cuántos países tiene fronteras Argentina?",
+    q: "¿Cómo se llaman los jinetes tradicionales que viven en las Pampas?",
     options: [
-      "Con tres países (Chile, Brasil y Uruguay)",
-      "Con cuatro países (Chile, Bolivia, Brasil y Uruguay)",
-      "Con cinco países (Chile, Bolivia, Paraguay, Brasil y Uruguay)",
-      "Con seis países (Chile, Perú, Bolivia, Paraguay, Brasil y Uruguay)"
-    ],
-    correct: 2
-  },
-  {
-    q: "¿Cuál es la montaña más alta de toda América y del hemisferio sur, ubicada en los Andes argentinos?",
-    options: [
-      "El monte Fitz Roy (3.405 m)",
-      "El monte Aconcagua (6.961 m)",
-      "El volcán Ojos del Salado (6.893 m)",
-      "El cerro Catedral (2.388 m)"
-    ],
-    correct: 1
-  },
-  {
-    q: "¿Cómo se llaman los jinetes tradicionales que viven y trabajan en las llanuras verdes de las Pampas?",
-    options: [
-      "Charros",
-      "Llaneros",
+      "Mariachis",
       "Gauchos",
-      "Huasos"
+      "Matadores",
+      "Mapuches"
     ],
-    correct: 2
+    correct: 1
   },
   {
-    q: "¿Cuándo es el verano en Argentina?",
+    q: "¿Cuál es el río más ancho del mundo que está en Argentina?",
+    options: [
+      "El río Paraná",
+      "El río Amazonas",
+      "El río Iguazú",
+      "El Río de la Plata"
+    ],
+    correct: 3
+  },
+  {
+    q: "¿Cuándo es verano en Argentina?",
     options: [
       "De junio a septiembre",
+      "De octubre a diciembre",
       "De diciembre a marzo",
-      "De marzo a junio",
-      "De septiembre a diciembre"
+      "De abril a julio"
     ],
-    correct: 1
+    correct: 2
   },
   {
-    q: "¿Qué día y en qué año declaró Argentina oficialmente su independencia de España?",
+    q: "¿Quién fundó Buenos Aires por segunda vez en 1580?",
+    options: [
+      "Juan de Garay",
+      "Pedro de Mendoza",
+      "José de San Martín",
+      "Raúl Alfonsín"
+    ],
+    correct: 0
+  },
+  {
+    q: "¿Qué día declaró Argentina su independencia de España?",
     options: [
       "El 25 de mayo de 1810",
       "El 9 de julio de 1816",
-      "El 20 de junio de 1820",
-      "El 12 de octubre de 1812"
+      "El 12 de octubre de 1492",
+      "El 1 de enero de 1983"
     ],
     correct: 1
   },
   {
-    q: "¿Quién fue el gran héroe militar que cruzó los Andes con su ejército para liberar Argentina, Chile y Perú?",
+    q: "¿Qué general cruzó los Andes para liberar Argentina, Chile y Perú?",
     options: [
-      "Simón Bolívar",
-      "Manuel Belgrano",
-      "El general José de San Martín",
-      "Domingo Faustino Sarmiento"
+      "Juan Domingo Perón",
+      "Carlos Gardel",
+      "Raúl Alfonsín",
+      "José de San Martín"
+    ],
+    correct: 3
+  },
+  {
+    q: "¿En qué años ganó Argentina sus tres Copas del Mundo de fútbol?",
+    options: [
+      "En 1930, 1950 y 2014",
+      "En 1982, 1990 y 2018",
+      "En 1978, 1986 y 2022",
+      "En 1966, 1998 y 2010"
     ],
     correct: 2
   },
   {
-    q: "¿De qué dos países europeos llegaron millones de inmigrantes en barco a finales del siglo XIX y principios del XX?",
+    q: "¿Cómo se llama el partido de fútbol entre Boca Juniors y River Plate?",
     options: [
-      "Francia y Portugal",
-      "Italia y España",
-      "Alemania y Reino Unido",
-      "Irlanda y Polonia"
-    ],
-    correct: 1
-  },
-  {
-    q: "¿Cuántas Copas del Mundo ha ganado la selección de fútbol de Argentina («La Albiceleste») y en qué años?",
-    options: [
-      "Dos: en 1978 y 1986",
-      "Tres: en 1978, 1986 y 2022",
-      "Cuatro: en 1978, 1986, 2014 y 2022",
-      "Cinco: en 1930, 1978, 1986, 1990 y 2022"
-    ],
-    correct: 1
-  },
-  {
-    q: "¿Cómo se llama el partido de fútbol entre los dos clubes históricos Boca Juniors y River Plate?",
-    options: [
-      "El Derbi Porteño",
-      "El Gran Clásico del Sur",
+      "La Albiceleste",
       "El Superclásico",
-      "La Final Albiceleste"
+      "El Mundial",
+      "La Copa"
     ],
-    correct: 2
+    correct: 1
   },
   {
-    q: "¿Qué instrumento musical especial es típico del tango argentino?",
+    q: "¿Qué instrumento musical especial se toca en el tango?",
     options: [
-      "El charango",
       "El bandoneón",
-      "La quena",
-      "El cajón peruano"
+      "La guitarra eléctrica",
+      "La trompeta",
+      "El piano"
     ],
-    correct: 1
+    correct: 0
   },
   {
-    q: "¿Cuál es el plato más típico de Argentina y cuál es su bebida tradicional compartida como símbolo de amistad?",
+    q: "¿En qué isla está Ushuaia, la ciudad llamada «El fin del mundo»?",
     options: [
-      "Empanadas y sangría",
-      "Milanesa y café cortado",
-      "Asado y mate",
-      "Locro y chicha"
+      "En la Patagonia",
+      "En las Pampas",
+      "En Tucumán",
+      "En Tierra del Fuego"
     ],
-    correct: 2
-  },
-  {
-    q: "¿Por qué llaman a la ciudad de Ushuaia «El fin del mundo»?",
-    options: [
-      "Porque está rodeada por el desierto más seco del planeta",
-      "Porque es la ciudad más austral del mundo (la más cercana al Polo Sur)",
-      "Porque fue la última ciudad fundada en Sudamérica",
-      "Porque se encuentra en la cima de los Andes"
-    ],
-    correct: 1
+    correct: 3
   }
 ];
 
 /* ==========================================================================
-   SERVER TIME OFFSET (keeps countdown synchronized across phones & board)
+   SERVER TIME OFFSET & SAFE FIREBASE INITIALIZATION
    ========================================================================== */
 let serverTimeOffset = 0;
-db.ref(".info/serverTimeOffset").on("value", (snap) => {
-  serverTimeOffset = snap.val() || 0;
-});
 
 function serverNow() {
   return Date.now() + serverTimeOffset;
+}
+
+function initFirebase() {
+  try {
+    if (typeof firebase === "undefined" || typeof firebase.initializeApp !== "function") {
+      throw new Error("No se pudieron cargar las librerías de Firebase (revisa la conexión a Internet o el bloqueador de contenido).");
+    }
+    if (!firebase.apps || firebase.apps.length === 0) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    if (typeof firebase.database !== "function") {
+      throw new Error("El módulo Firebase Realtime Database no está disponible.");
+    }
+    db = firebase.database();
+    firebaseInitError = "";
+
+    db.ref(".info/serverTimeOffset").on(
+      "value",
+      (snap) => {
+        serverTimeOffset = snap.val() || 0;
+      },
+      () => {
+        // Ignore offset error gracefully; fall back to local clock
+      }
+    );
+    return true;
+  } catch (err) {
+    db = null;
+    firebaseInitError = (err && err.message) ? err.message : "Error de conexión con Firebase.";
+    return false;
+  }
 }
 
 /* ==========================================================================
@@ -192,31 +220,52 @@ function serverNow() {
    ========================================================================== */
 const $ = (id) => document.getElementById(id);
 
-const screens = {
-  home: $("screen-home"),
-  host: $("screen-host"),
-  player: $("screen-player")
-};
+let screens = {};
+let hostViews = {};
+let playerViews = {};
+let playerSubstates = {};
 
-const hostViews = {
-  lobby: $("host-view-lobby"),
-  question: $("host-view-question"),
-  leaderboard: $("host-view-leaderboard"),
-  podium: $("host-view-podium")
-};
+function initDomRefs() {
+  screens = {
+    home: $("screen-home"),
+    host: $("screen-host"),
+    player: $("screen-player")
+  };
 
-const playerViews = {
-  join: $("player-view-join"),
-  game: $("player-view-game")
-};
+  hostViews = {
+    lobby: $("host-view-lobby"),
+    question: $("host-view-question"),
+    leaderboard: $("host-view-leaderboard"),
+    podium: $("host-view-podium")
+  };
 
-const playerSubstates = {
-  lobby: $("player-state-lobby"),
-  question: $("player-state-question"),
-  waiting: $("player-state-waiting"),
-  feedback: $("player-state-feedback"),
-  podium: $("player-state-podium")
-};
+  playerViews = {
+    join: $("player-view-join"),
+    game: $("player-view-game")
+  };
+
+  playerSubstates = {
+    lobby: $("player-state-lobby"),
+    question: $("player-state-question"),
+    waiting: $("player-state-waiting"),
+    feedback: $("player-state-feedback"),
+    podium: $("player-state-podium")
+  };
+}
+
+function showFatalError(title, detail) {
+  Object.keys(screens).forEach((key) => {
+    if (screens[key]) screens[key].classList.remove("active");
+  });
+  const banner = $("app-error-banner");
+  if (banner) {
+    const titleEl = $("app-error-title");
+    const detailEl = $("app-error-detail");
+    if (titleEl) titleEl.textContent = title || "Error al cargar la aplicación";
+    if (detailEl) detailEl.textContent = detail || "Intenta recargar la página.";
+    banner.classList.remove("hidden");
+  }
+}
 
 let toastTimer = null;
 function showToast(msg) {
@@ -231,7 +280,9 @@ function showToast(msg) {
 
 function showScreen(name) {
   Object.keys(screens).forEach((key) => {
-    screens[key].classList.toggle("active", key === name);
+    if (screens[key]) {
+      screens[key].classList.toggle("active", key === name);
+    }
   });
 }
 
@@ -261,9 +312,12 @@ function generatePlayerId() {
   return "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
 }
 
-function buildJoinUrl(pin) {
-  const base = window.location.href.split("?")[0].split("#")[0];
-  return `${base}?pin=${encodeURIComponent(pin)}`;
+function getBaseUrl() {
+  return window.location.href.split("?")[0].split("#")[0];
+}
+
+function buildJoinUrl(currentPin) {
+  return window.location.href.split("?")[0].split("#")[0] + "?pin=" + encodeURIComponent(currentPin);
 }
 
 function getSortedPlayers(playersObj) {
@@ -293,6 +347,8 @@ function computeRemainingSeconds(startedAt, duration = QUESTION_DURATION) {
    ========================================================================== */
 const hostState = {
   pin: null,
+  directJoinUrl: "",
+  copyResetTimer: null,
   status: null,
   currentQuestion: 0,
   questionStartedAt: 0,
@@ -326,6 +382,11 @@ function cleanupHostListeners() {
 }
 
 async function startHostSession() {
+  if (!db) {
+    showFatalError("Sin conexión con Firebase", firebaseInitError || "No se pudo conectar con la base de datos.");
+    return;
+  }
+
   cleanupHostListeners();
   showScreen("host");
   showHostView("lobby");
@@ -359,10 +420,18 @@ async function startHostSession() {
   $("host-lobby-pin").textContent = pin;
 
   const joinUrl = buildJoinUrl(pin);
-  $("host-join-url").textContent = joinUrl;
+  hostState.directJoinUrl = joinUrl;
+
+  $("host-direct-url").textContent = joinUrl;
   $("host-qr-img").src =
     "https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=" +
     encodeURIComponent(joinUrl);
+
+  // Reset copy button label cleanly
+  clearTimeout(hostState.copyResetTimer);
+  $("btn-copy-link").classList.remove("copied");
+  $("copy-link-icon").classList.remove("hidden");
+  $("copy-link-label").textContent = "Copiar enlace directo";
 
   hostState.roomRef = db.ref(`rooms/${pin}`);
   await hostState.roomRef.set({
@@ -743,7 +812,61 @@ function showJoinError(msg) {
   }
 }
 
-function openPlayerMode(prefillPin = "") {
+async function copyDirectJoinLink() {
+  const url = hostState.directJoinUrl || (hostState.pin ? buildJoinUrl(hostState.pin) : "");
+  if (!url) return;
+
+  let copied = false;
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+    try {
+      await navigator.clipboard.writeText(url);
+      copied = true;
+    } catch (err) {
+      copied = false;
+    }
+  }
+
+  if (!copied) {
+    // Fallback for non-HTTPS local environments
+    const temp = document.createElement("textarea");
+    temp.value = url;
+    temp.setAttribute("readonly", "");
+    temp.style.position = "fixed";
+    temp.style.opacity = "0";
+    document.body.appendChild(temp);
+    temp.select();
+    try {
+      document.execCommand("copy");
+      copied = true;
+    } catch (err) {
+      copied = false;
+    }
+    temp.remove();
+  }
+
+  if (copied) {
+    const btn = $("btn-copy-link");
+    const icon = $("copy-link-icon");
+    const label = $("copy-link-label");
+
+    btn.classList.add("copied");
+    icon.classList.add("hidden");
+    label.textContent = "¡Enlace copiado! ✓";
+
+    clearTimeout(hostState.copyResetTimer);
+    hostState.copyResetTimer = setTimeout(() => {
+      btn.classList.remove("copied");
+      icon.classList.remove("hidden");
+      label.textContent = "Copiar enlace directo";
+    }, 2000);
+  } else {
+    showToast("No se pudo copiar automáticamente el enlace.");
+  }
+}
+
+let lockedStudentPin = "";
+
+function openPlayerMode(prefillPin = "", isLocked = false) {
   cleanupPlayerListeners();
   showScreen("player");
   showPlayerView("join");
@@ -751,11 +874,36 @@ function openPlayerMode(prefillPin = "") {
 
   const pinInput = $("input-pin");
   const nameInput = $("input-name");
+  const pinGroup = $("player-pin-group");
+  const roomBadge = $("player-room-badge");
+  const roomBadgePin = $("player-room-badge-pin");
+  const changePinBtn = $("btn-change-pin");
 
-  if (prefillPin) {
-    pinInput.value = prefillPin.replace(/\D/g, "").slice(0, 4);
+  const cleanPin = (prefillPin || "").replace(/\D/g, "").slice(0, 4);
+
+  if (isLocked && cleanPin.length > 0) {
+    pinInput.value = cleanPin;
+    pinInput.readOnly = true;
+    roomBadgePin.textContent = `#${cleanPin}`;
+    roomBadge.classList.remove("hidden");
+    roomBadge.classList.add("locked");
+    if (changePinBtn) changePinBtn.classList.add("hidden");
+    pinGroup.classList.add("hidden");
+    setTimeout(() => nameInput.focus(), 50);
+  } else if (cleanPin.length === 4) {
+    pinInput.value = cleanPin;
+    pinInput.readOnly = false;
+    roomBadgePin.textContent = `#${cleanPin}`;
+    roomBadge.classList.remove("hidden", "locked");
+    if (changePinBtn) changePinBtn.classList.remove("hidden");
+    pinGroup.classList.add("hidden");
     setTimeout(() => nameInput.focus(), 50);
   } else {
+    pinInput.value = cleanPin;
+    pinInput.readOnly = false;
+    roomBadge.classList.add("hidden");
+    roomBadge.classList.remove("locked");
+    pinGroup.classList.remove("hidden");
     setTimeout(() => pinInput.focus(), 50);
   }
 }
@@ -778,6 +926,11 @@ async function handlePlayerJoin(e) {
     return;
   }
 
+  if (!db) {
+    showJoinError(firebaseInitError || "No hay conexión con Firebase. Recarga la página e inténtalo de nuevo.");
+    return;
+  }
+
   const joinBtn = $("btn-player-join");
   joinBtn.disabled = true;
   joinBtn.textContent = "Conectando...";
@@ -787,7 +940,7 @@ async function handlePlayerJoin(e) {
     if (!roomSnap.exists()) {
       showJoinError(`No se encontró ninguna sala con el PIN ${pin}.`);
       joinBtn.disabled = false;
-      joinBtn.textContent = "UNIRSE";
+      joinBtn.textContent = "Entrar";
       return;
     }
 
@@ -818,7 +971,7 @@ async function handlePlayerJoin(e) {
     showJoinError("No se pudo conectar con la sala. Inténtalo de nuevo.");
   } finally {
     joinBtn.disabled = false;
-    joinBtn.textContent = "UNIRSE";
+    joinBtn.textContent = "Entrar";
   }
 }
 
@@ -1087,58 +1240,99 @@ function renderPlayerPodium() {
    EVENT BINDINGS & URL ?pin=XXXX AUTO-DETECTION
    ========================================================================== */
 function bindEvents() {
-  // Home
-  $("btn-choose-host").addEventListener("click", () => {
-    startHostSession();
-  });
+  // Home & Host controls (only present on the main URL without ?pin=)
+  if ($("btn-choose-host")) {
+    $("btn-choose-host").addEventListener("click", () => {
+      startHostSession();
+    });
+  }
 
-  $("btn-choose-player").addEventListener("click", () => {
-    openPlayerMode("");
-  });
+  if ($("btn-choose-player")) {
+    $("btn-choose-player").addEventListener("click", () => {
+      openPlayerMode("", false);
+    });
+  }
 
-  // Host controls
-  $("btn-host-exit").addEventListener("click", () => {
-    cleanupHostListeners();
-    showScreen("home");
-  });
+  if ($("btn-host-exit")) {
+    $("btn-host-exit").addEventListener("click", () => {
+      cleanupHostListeners();
+      showScreen("home");
+    });
+  }
 
-  $("btn-host-start").addEventListener("click", () => {
-    hostStartQuestion(0);
-  });
+  if ($("btn-host-start")) {
+    $("btn-host-start").addEventListener("click", () => {
+      hostStartQuestion(0);
+    });
+  }
 
-  $("btn-host-reveal").addEventListener("click", () => {
-    hostRevealAnswer();
-  });
+  if ($("btn-copy-link")) {
+    $("btn-copy-link").addEventListener("click", () => {
+      copyDirectJoinLink();
+    });
+  }
 
-  $("btn-host-leaderboard").addEventListener("click", () => {
-    hostShowLeaderboard();
-  });
+  if ($("btn-host-reveal")) {
+    $("btn-host-reveal").addEventListener("click", () => {
+      hostRevealAnswer();
+    });
+  }
 
-  $("btn-host-next").addEventListener("click", () => {
-    hostAdvance();
-  });
+  if ($("btn-host-leaderboard")) {
+    $("btn-host-leaderboard").addEventListener("click", () => {
+      hostShowLeaderboard();
+    });
+  }
 
-  $("btn-lb-next").addEventListener("click", () => {
-    hostAdvance();
-  });
+  if ($("btn-host-next")) {
+    $("btn-host-next").addEventListener("click", () => {
+      hostAdvance();
+    });
+  }
 
-  $("btn-host-new-game").addEventListener("click", () => {
-    startHostSession();
-  });
+  if ($("btn-lb-next")) {
+    $("btn-lb-next").addEventListener("click", () => {
+      hostAdvance();
+    });
+  }
+
+  if ($("btn-host-new-game")) {
+    $("btn-host-new-game").addEventListener("click", () => {
+      startHostSession();
+    });
+  }
 
   // Player controls
-  $("btn-player-back").addEventListener("click", () => {
-    cleanupPlayerListeners();
-    // Clear ?pin from URL cleanly if returning home
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    showScreen("home");
-  });
+  if ($("btn-player-back")) {
+    $("btn-player-back").addEventListener("click", () => {
+      if (lockedStudentPin) return;
+      cleanupPlayerListeners();
+      try {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, getBaseUrl());
+        }
+      } catch (err) {
+        // Ignore history API restrictions on iOS Safari private mode / file://
+      }
+      showScreen("home");
+    });
+  }
 
   $("player-join-form").addEventListener("submit", handlePlayerJoin);
 
+  if ($("btn-change-pin")) {
+    $("btn-change-pin").addEventListener("click", () => {
+      if (lockedStudentPin) return;
+      $("player-room-badge").classList.add("hidden");
+      $("player-pin-group").classList.remove("hidden");
+      $("input-pin").readOnly = false;
+      $("input-pin").focus();
+      $("input-pin").select();
+    });
+  }
+
   $("input-pin").addEventListener("input", (e) => {
+    if (lockedStudentPin) return;
     e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
   });
 
@@ -1150,20 +1344,82 @@ function bindEvents() {
 
   $("btn-player-leave").addEventListener("click", () => {
     cleanupPlayerListeners();
-    showScreen("home");
+    if (lockedStudentPin) {
+      openPlayerMode(lockedStudentPin, true);
+    } else {
+      showScreen("home");
+    }
   });
 }
 
-function initApp() {
-  bindEvents();
+function readPinFromUrl() {
+  try {
+    if (typeof URLSearchParams === "function") {
+      const params = new URLSearchParams(window.location.search);
+      return (params.get("pin") || "").replace(/\D/g, "").slice(0, 4);
+    }
+  } catch (err) {
+    // Fall through to safe regex fallback below
+  }
+  try {
+    const match = (window.location.search || "").match(/[?&]pin=([^&]+)/i);
+    if (match && match[1]) {
+      return decodeURIComponent(match[1]).replace(/\D/g, "").slice(0, 4);
+    }
+  } catch (err) {
+    return "";
+  }
+  return "";
+}
 
-  // Auto-open player mode if URL has ?pin=XXXX
-  const params = new URLSearchParams(window.location.search);
-  const pinParam = (params.get("pin") || "").replace(/\D/g, "").slice(0, 4);
-  if (pinParam.length > 0) {
-    openPlayerMode(pinParam);
-  } else {
-    showScreen("home");
+function initApp() {
+  try {
+    initDomRefs();
+
+    const firebaseReady = initFirebase();
+    if (!firebaseReady) {
+      showFatalError(
+        "No se pudo conectar con Firebase",
+        firebaseInitError || "Comprueba tu conexión a Internet y vuelve a intentarlo."
+      );
+      return;
+    }
+
+    const pinParam = readPinFromUrl();
+
+    if (pinParam.length > 0) {
+      // Student direct link (?pin=XXXX): remove role selector & host screens completely
+      lockedStudentPin = pinParam;
+      document.body.classList.add("student-direct-mode");
+
+      const homeEl = $("screen-home");
+      if (homeEl) {
+        homeEl.remove();
+        screens.home = null;
+      }
+      const hostEl = $("screen-host");
+      if (hostEl) {
+        hostEl.remove();
+        screens.host = null;
+      }
+      const topNavEl = $("player-top-nav");
+      if (topNavEl) topNavEl.remove();
+      const changePinEl = $("btn-change-pin");
+      if (changePinEl) changePinEl.remove();
+
+      bindEvents();
+      openPlayerMode(lockedStudentPin, true);
+    } else {
+      // Main URL without ?pin=: show HOST / PLAYER role selection screen
+      lockedStudentPin = "";
+      bindEvents();
+      showScreen("home");
+    }
+  } catch (err) {
+    showFatalError(
+      "Error al iniciar la aplicación",
+      (err && err.message) ? err.message : "Ocurrió un error inesperado. Por favor, recarga la página."
+    );
   }
 }
 

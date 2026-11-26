@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Presentación sobre Argentina · Quiz Interactivo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,8 +18,16 @@
   </div>
 
   <div class="app-shell">
+    <!-- Visible fallback error card (prevents blank screen on load/Firebase errors) -->
+    <section id="app-error-banner" class="card app-error-card hidden" role="alert" aria-live="assertive">
+      <div class="app-error-icon" aria-hidden="true">⚠️</div>
+      <h2 id="app-error-title" class="app-error-title">Error al iniciar el quiz</h2>
+      <p id="app-error-detail" class="app-error-detail"></p>
+      <button type="button" class="btn-primary btn-lg" onclick="window.location.reload()">Recargar página</button>
+    </section>
+
     <!-- ==================== 1. HOME SCREEN ==================== -->
-    <main id="screen-home" class="screen active" aria-label="Pantalla de inicio">
+    <main id="screen-home" class="screen" aria-label="Pantalla de inicio">
       <header class="home-header">
         <div class="sun-badge" aria-hidden="true">
           <svg viewBox="0 0 64 64" width="44" height="44" fill="none">
@@ -92,12 +100,38 @@
       <div id="host-view-lobby" class="host-view active">
         <div class="lobby-layout">
           <div class="card lobby-join-card">
-            <p class="section-label">ESCANEA EL CÓDIGO QR O ENTRA CON EL PIN</p>
-            <div class="pin-display" id="host-lobby-pin">----</div>
-            <div class="qr-frame">
-              <img id="host-qr-img" src="" alt="Código QR para unirse al quiz" width="280" height="280">
+            <div class="lobby-join-split">
+              <!-- Left: QR Code -->
+              <div class="lobby-qr-pane">
+                <p class="section-label">OPCIÓN 1 · CÓDIGO QR</p>
+                <div class="qr-frame">
+                  <img id="host-qr-img" src="" alt="Código QR para unirse al quiz" width="280" height="280">
+                </div>
+                <p class="qr-caption">Escanea con tu móvil</p>
+              </div>
+
+              <div class="lobby-split-divider" aria-hidden="true">
+                <span>o</span>
+              </div>
+
+              <!-- Right: Direct Link + PIN -->
+              <div class="lobby-direct-pane">
+                <p class="section-label">OPCIÓN 2 · ENLACE DIRECTO PARA ALUMNOS</p>
+                <div class="base-url-box">
+                  <span class="base-url-label">Enlace directo de la sala:</span>
+                  <span class="base-url-value" id="host-direct-url"></span>
+                </div>
+                <p class="pin-caption">PIN de la sala:</p>
+                <div class="pin-display" id="host-lobby-pin">----</div>
+                <button id="btn-copy-link" class="btn-gold btn-lg btn-copy-link" type="button">
+                  <svg id="copy-link-icon" class="copy-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span id="copy-link-label">Copiar enlace directo</span>
+                </button>
+              </div>
             </div>
-            <p class="join-url-text" id="host-join-url"></p>
           </div>
 
           <div class="card lobby-players-card">
@@ -267,7 +301,7 @@
     <section id="screen-player" class="screen" aria-label="Modo jugador móvil">
       <!-- PLAYER VIEW A: JOIN FORM -->
       <div id="player-view-join" class="player-view active">
-        <div class="player-top-nav">
+        <div id="player-top-nav" class="player-top-nav">
           <button id="btn-player-back" class="btn-ghost btn-sm" type="button">← Inicio</button>
         </div>
 
@@ -275,8 +309,13 @@
           <p class="section-label">UNIRSE AL QUIZ</p>
           <h2 class="player-join-title">Presentación sobre Argentina</h2>
 
+          <div id="player-room-badge" class="room-badge hidden">
+            <span class="room-badge-text">Sala <strong id="player-room-badge-pin" class="tabular">#0000</strong></span>
+            <button id="btn-change-pin" class="btn-change-pin" type="button">Cambiar PIN</button>
+          </div>
+
           <form id="player-join-form" class="join-form" novalidate>
-            <div class="form-group">
+            <div class="form-group" id="player-pin-group">
               <label for="input-pin">PIN de la sala (4 dígitos)</label>
               <input
                 id="input-pin"
@@ -299,14 +338,14 @@
                 maxlength="24"
                 placeholder="Escribe tu nombre"
                 autocomplete="given-name"
-                class="input-field"
+                class="input-field input-name-lg"
                 required
               >
             </div>
 
             <p id="player-join-error" class="form-error hidden" role="alert"></p>
 
-            <button id="btn-player-join" class="btn-primary btn-block btn-lg" type="submit">UNIRSE</button>
+            <button id="btn-player-join" class="btn-primary btn-block btn-lg" type="submit">Entrar</button>
           </form>
         </div>
       </div>
